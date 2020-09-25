@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "coffee lightkeeper.coffee",
-    "build": "coffee -c lightkeeper.coffee && echo \"#!/usr/bin/env node\n$(cat lightkeeper.js)\" > lightkeeper.js",
+    "build": "coffee -c --bare lightkeeper.coffee && sed -i '' '1s/^/#!\\/usr\\/bin\\/env node\\\n/' lightkeeper.js",
     "version": "npm run build && git add -A",
     "postversion": "git push --follow-tags"
   },
