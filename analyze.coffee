@@ -1,4 +1,4 @@
-#!/usr/bin/env coffee
+#!/usr/bin/env js
 
 # Deps
 { program } = require '@caporal/core'
