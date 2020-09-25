@@ -1,0 +1,20 @@
+{
+  "name": "lightkeeper",
+  "version": "1.0.0",
+  "description": "Averages multiple successive Lighthouse tests to arrive at a more accurate PageSpeed score",
+  "repository": "git@github.com:BKWLD/lightkeeper.git",
+  "author": "info@bukwild.com",
+  "license": "MIT",
+  "scripts": {
+    "analyze": "coffee analyze.coffee"
+  },
+  "dependencies": {
+    "@caporal/core": "^2.0.2",
+    "cli-table": "^0.3.1",
+    "lighthouse": "^6.3.0",
+    "progress-estimator": "^0.3.0"
+  },
+  "devDependencies": {
+    "coffeescript": "^2.5.1"
+  }
+}
