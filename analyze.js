@@ -1,8 +1,8 @@
-//!/usr/bin/env js
-
-// Deps
+#!/usr/bin/env node
+;
 var Table, analyzeUrl, chalk, chromeLauncher, configs, createProgressBar, defaultProgressTheme, formatRow, formatTime, formatValue, lighthouse, program, startUp, ucFirst;
 
+// Deps
 ({program} = require('@caporal/core'));
 
 lighthouse = require('lighthouse');

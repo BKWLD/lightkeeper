@@ -1,4 +1,5 @@
-#!/usr/bin/env js
+`#!/usr/bin/env node
+`
 
 # Deps
 { program } = require '@caporal/core'
