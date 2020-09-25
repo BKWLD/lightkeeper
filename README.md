@@ -16,14 +16,14 @@ $ lightkeeper https://yourdomain.com
 From `lightkeeper --help`:
 
 ```
-  ARGUMENTS
+ARGUMENTS
 
-    <url>                   The URL to test
+  <url>                   The URL to test
 
-  OPTIONS
+OPTIONS
 
-    -b, --both              Test desktop and mobile
-    -d, --desktop           Test desktop rather than mobile
-    -t, --times <count>     The number of tests to run
-                            default: 10
+  -b, --both              Test desktop and mobile
+  -d, --desktop           Test desktop rather than mobile
+  -t, --times <count>     The number of tests to run
+                          default: 10
 ```
