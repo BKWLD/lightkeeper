@@ -60,8 +60,8 @@
     theme = defaultProgressTheme;
     theme.asciiInProgress = chalk.hex('#00de6d');
     progress = createProgressBar({theme});
-    console.log("
-");
+    console.log(""); // Adds a newline
+    
     // Create chrome instance that runs test
     bootChrome = chromeLauncher.launch({
       chromeFlags: ['--headless']
