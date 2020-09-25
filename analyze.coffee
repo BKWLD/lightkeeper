@@ -5,47 +5,75 @@
 lighthouse = require 'lighthouse'
 chromeLauncher = require 'chrome-launcher'
 createProgressBar = require 'progress-estimator'
+defaultProgressTheme = require 'progress-estimator/src/theme'
 Table = require 'cli-table'
+chalk = require 'chalk'
+
+# Load Lighthouse configs
+configs =
+	desktop: require 'lighthouse/lighthouse-core/config/lr-desktop-config.js'
+	mobile: require 'lighthouse/lighthouse-core/config/lr-mobile-config.js'
 
 # On cntrl-c, trigger normal exit behavior
 process.on 'SIGINT', -> process.exit(0)
-
-# Const
 
 # Setup CLI
 program
 .description 'Averages multiple successive Lighthouse tests'
 .argument '<url>', 'The URL to test'
 .option '-t, --times <count>', 'The number of tests to run', default: 10
-.action ({ args: { url }, options: { times }, logger }) ->
+.option '-d, --desktop', 'Test desktop rather than mobile'
+.option '-b, --both ', 'Test desktop and mobile'
 
-	# Create storage for
-	progress = createProgressBar()
+# Map args and begin running
+.action ({ args: { url }, options: { times, desktop, both }}) ->
+	devices = switch
+		when both then ['desktop', 'mobile']
+		when desktop then ['desktop']
+		else ['mobile']
+	startUp { url, times, devices }
+program.run()
+
+# Boot up the runner
+startUp = ({ url, times, devices }) ->
+
+	# Create shared progress bar
+	theme = defaultProgressTheme
+	theme.asciiInProgress = chalk.hex '#00de6d'
+	progress = createProgressBar { theme }
 
 	# Create chrome instance that runs test
 	bootChrome = chromeLauncher.launch chromeFlags: ['--headless']
 	chrome = await progress bootChrome, 'Booting Chrome', estimate: 1000
 	process.on 'exit', -> chrome.kill() # Cleanup
 
-	# Run tests one at a time and collect results
-	results = []
-	for time in [1..times]
-		benchmark = lighthouse url,
-			onlyCategories: ['performance']
-			onlyAudits: ['first-contentful-paint', 'speed-index',
-				'largest-contentful-paint', 'interactive', 'total-blocking-time',
-				'cumulative-layout-shift']
-			port: chrome.port
-		{ report } =  await progress benchmark, "Test #{time}/#{times}",
-			estimate: 6000
-		results.push JSON.parse report
+	# Loop through each device and run tests
+	for device in devices
+		await analyzeUrl {url, times, device, chrome, progress }
 
 	# Close Chrome
 	chrome.kill()
 
+# Analyze a URL a certain number of times for the provided device
+analyzeUrl = ({ url, times, device, chrome, progress }) ->
+
+	# Make the lighthouse config
+	settings =
+		onlyCategories: ['performance']
+		port: chrome.port
+
+	# Run tests one at a time and collect results
+	results = []
+	for time in [1..times]
+		{ report } =  await progress lighthouse(url, settings, configs[device]),
+			"Testing #{ucFirst device} #{time}/#{times}", estimate: 10000
+		results.push JSON.parse report
+
 	# Create output of all results
 	columns = ['Score', 'FCP', 'SI', 'LCP', 'TTI', 'TBT', 'CLS']
-	table = new Table head: ['', ...columns]
+	table = new Table
+		head: ['', ...columns]
+		style: head: ['green']
 	avgs = Array(columns.length).fill(0)
 	for result, index in results
 
@@ -61,14 +89,15 @@ program
 		]
 
 		# Add to averages list
-		avgs[i] = row[i]/times for val, i in avgs
+		avgs[i] += row[i]/times for val, i in avgs
 
 		# Format for humans and add to table
 		table.push "##{index + 1}": formatRow row
 
 	# Add averages and output table
-	table.push 'AVG': formatRow avgs
-	console.log table.toString()
+	table.push [chalk.bold('AVG')]: formatRow(avgs).map (val) -> chalk.bold val
+	console.log "\n\n" + chalk.green.bold "#{ucFirst device} Results"
+	console.log table.toString() + "\n"
 
 # Helper function to format a row of table output for human readibility
 formatRow = (row) ->
@@ -93,5 +122,5 @@ formatValue = (num, depth = 1) -> num.toLocaleString 'en-US',
 	minimumFractionDigits: 0
 	maximumFractionDigits: depth
 
-# Start it
-program.run()
+# Capitalize first letter
+ucFirst = (str) -> str.charAt(0).toUpperCase() + str.slice(1)
