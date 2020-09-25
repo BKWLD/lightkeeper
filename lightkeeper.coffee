@@ -1,6 +1,3 @@
-`#!/usr/bin/env node
-`
-
 # Deps
 { program } = require '@caporal/core'
 lighthouse = require 'lighthouse'
@@ -42,6 +39,7 @@ startUp = ({ url, times, devices }) ->
 	theme = defaultProgressTheme
 	theme.asciiInProgress = chalk.hex '#00de6d'
 	progress = createProgressBar { theme }
+	console.log "" # Adds a newline
 
 	# Create chrome instance that runs test
 	bootChrome = chromeLauncher.launch chromeFlags: ['--headless']

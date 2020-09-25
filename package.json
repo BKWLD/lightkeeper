@@ -6,13 +6,13 @@
   "author": "info@bukwild.com",
   "license": "MIT",
   "scripts": {
-    "analyze": "coffee analyze.coffee",
-    "build": "coffee --compile --bare --no-header analyze.coffee",
+    "start": "coffee lightkeeper.coffee",
+    "build": "coffee -c lightkeeper.coffee && echo \"#!/usr/bin/env node\n$(cat lightkeeper.js)\" > lightkeeper.js",
     "version": "npm run build && git add -A",
     "postversion": "git push --follow-tags"
   },
   "bin": {
-    "lightkeeper": "analyze.js"
+    "lightkeeper": "lightkeeper.js"
   },
   "dependencies": {
     "@caporal/core": "^2.0.2",
