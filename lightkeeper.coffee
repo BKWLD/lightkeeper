@@ -20,15 +20,15 @@ program
 .description 'Averages multiple successive Lighthouse tests'
 .argument '<url>', 'The URL to test'
 .option '-t, --times <count>', 'The number of tests to run', default: 10
-.option '-d, --desktop', 'Test desktop rather than mobile'
-.option '-b, --both ', 'Test desktop and mobile'
+.option '-d, --desktop', 'Test only desktop'
+.option '-m, --mobile ', 'Test only mobile'
 
 # Map args and begin running
-.action ({ args: { url }, options: { times, desktop, both }}) ->
+.action ({ args: { url }, options: { times, desktop, mobile }}) ->
 	devices = switch
-		when both then ['desktop', 'mobile']
+		when mobile then ['mobile']
 		when desktop then ['desktop']
-		else ['mobile']
+		else ['desktop', 'mobile']
 	startUp { url, times, devices }
 program.run()
 

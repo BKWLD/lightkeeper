@@ -22,8 +22,8 @@ ARGUMENTS
 
 OPTIONS
 
-  -b, --both              Test desktop and mobile
-  -d, --desktop           Test desktop rather than mobile
+  -d, --desktop           Test only desktop
+  -m, --mobile            Test only mobile
   -t, --times <count>     The number of tests to run
                           default: 10
 ```
