@@ -28,12 +28,12 @@ program
 	devices = switch
 		when mobile then ['mobile']
 		when desktop then ['desktop']
-		else ['desktop', 'mobile']
-	startUp { url, times, devices }
+		else ['mobile', 'desktop']
+	execute { url, times, devices }
 program.run()
 
 # Boot up the runner
-startUp = ({ url, times, devices }) ->
+execute = ({ url, times, devices }) ->
 
 	# Create shared progress bar
 	theme = defaultProgressTheme
@@ -47,8 +47,14 @@ startUp = ({ url, times, devices }) ->
 	process.on 'exit', -> chrome.kill() # Cleanup
 
 	# Loop through each device and run tests
+	results = []
 	for device in devices
-		await analyzeUrl {url, times, device, chrome, progress }
+		results.push await analyzeUrl {url, times, device, chrome, progress }
+
+	# Output results
+	for device, i in devices
+		console.log "\n\n" + chalk.green.bold "#{ucFirst device} Results"
+		console.log results[i].toString() + "\n"
 
 	# Close Chrome
 	chrome.kill()
@@ -93,10 +99,9 @@ analyzeUrl = ({ url, times, device, chrome, progress }) ->
 		# Format for humans and add to table
 		table.push "##{index + 1}": formatRow row
 
-	# Add averages and output table
+	# Add averages and return
 	table.push [chalk.bold('AVG')]: formatRow(avgs).map (val) -> chalk.bold val
-	console.log "\n\n" + chalk.green.bold "#{ucFirst device} Results"
-	console.log table.toString() + "\n"
+	return table
 
 # Helper function to format a row of table output for human readibility
 formatRow = (row) ->
