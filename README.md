@@ -22,8 +22,14 @@ ARGUMENTS
 
 OPTIONS
 
-  -d, --desktop           Test only desktop
-  -m, --mobile            Test only mobile
-  -t, --times <count>     The number of tests to run
-                          default: 10
+  -b, --block <urls>    Comma seperated URLs to block, wildcards allowed
+  -d, --desktop         Test only desktop
+  -m, --mobile          Test only mobile
+  -t, --times <count>   The number of tests to run
+                        default: 10
 ```
+
+For example:
+
+- `lightkeeper https://www.bukwild.com` - Runs 10 desktop and 10 mobile tests
+- `lightkeeper https://www.bukwild.com -m -t=30 -b=googletagmanager.com` - Runs 30 mobile tests while blocking Google Tag Manager

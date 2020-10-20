@@ -22,18 +22,20 @@ program
 .option '-t, --times <count>', 'The number of tests to run', default: 10
 .option '-d, --desktop', 'Test only desktop'
 .option '-m, --mobile ', 'Test only mobile'
+.option '-b, --block <urls>', 'Comma seperated URLs to block, wildcards allowed'
 
 # Map args and begin running
-.action ({ args: { url }, options: { times, desktop, mobile }}) ->
+.action ({ args: { url }, options: { times, desktop, mobile, block }}) ->
 	devices = switch
 		when mobile then ['mobile']
 		when desktop then ['desktop']
 		else ['mobile', 'desktop']
-	execute { url, times, devices }
+	blockedUrls = if block then block.split ',' else []
+	execute { url, times, devices, blockedUrls }
 program.run()
 
 # Boot up the runner
-execute = ({ url, times, devices }) ->
+execute = ({ url, times, devices, blockedUrls }) ->
 
 	# Create shared progress bar
 	theme = defaultProgressTheme
@@ -49,7 +51,9 @@ execute = ({ url, times, devices }) ->
 	# Loop through each device and run tests
 	results = []
 	for device in devices
-		results.push await analyzeUrl {url, times, device, chrome, progress }
+		results.push await analyzeUrl {
+			url, times, device, blockedUrls, chrome, progress,
+		}
 
 	# Output results
 	for device, i in devices
@@ -60,17 +64,18 @@ execute = ({ url, times, devices }) ->
 	chrome.kill()
 
 # Analyze a URL a certain number of times for the provided device
-analyzeUrl = ({ url, times, device, chrome, progress }) ->
+analyzeUrl = ({ url, times, device, blockedUrls, chrome, progress }) ->
 
 	# Make the lighthouse config
-	settings =
+	flags =
 		onlyCategories: ['performance']
+		blockedUrlPatterns: blockedUrls
 		port: chrome.port
 
 	# Run tests one at a time and collect results
 	results = []
 	for time in [1..times]
-		{ report } =  await progress lighthouse(url, settings, configs[device]),
+		{ report } =  await progress lighthouse(url, flags, configs[device]),
 			"Testing #{ucFirst device} #{time}/#{times}", estimate: 10000
 		results.push JSON.parse report
 
