@@ -58,3 +58,4 @@ For example:
 
 - `lightkeeper https://www.bukwild.com` - Runs 10 desktop and 10 mobile tests
 - `lightkeeper https://www.bukwild.com -m -t=30 -b=googletagmanager` - Runs 30 mobile tests while blocking Google Tag Manager
+- `lightkeeper https://www.bukwild.com -ms -t=100 && say "All done"` - Runs 100 mobile tests and only show the summary at the end.  And says "All done" aloud on a Mac.
