@@ -4,6 +4,7 @@ lighthouse = require 'lighthouse'
 chromeLauncher = require 'chrome-launcher'
 createProgressBar = require 'progress-estimator'
 defaultProgressTheme = require 'progress-estimator/src/theme'
+stats = require 'stats-lite'
 readline = require 'readline'
 Table = require 'cli-table'
 chalk = require 'chalk'
@@ -57,13 +58,13 @@ execute = ({ url, times, devices, blockedUrls, summary }) ->
 			url, times, device, blockedUrls, chrome, progress,
 		}
 
-	# Output results
+	# Output results, only rendering the summary lines if specified.
 	await clearLines times * devices.length
 	for device, i in devices
 		console.log chalk.green.bold "#{ucFirst device} Results"
 		unless summary then console.log results[i].toString() + "\n"
 		else
-			results[i].splice 0, results[i].length - 1
+			results[i].splice 0, results[i].length - 2
 			console.log results[i].toString() + "\n"
 
 	# Close Chrome
@@ -85,33 +86,49 @@ analyzeUrl = ({ url, times, device, blockedUrls, chrome, progress }) ->
 			"Testing #{ucFirst device} #{time}/#{times}", estimate: 10000
 		results.push JSON.parse report
 
-	# Create output of all results
+	# Create array with results of each stat
+	rows = results.map (result) -> [
+		result.categories.performance.score
+		result.audits['first-contentful-paint'].numericValue
+		result.audits['speed-index'].numericValue
+		result.audits['largest-contentful-paint'].numericValue
+		result.audits['interactive'].numericValue
+		result.audits['total-blocking-time'].numericValue
+		result.audits['cumulative-layout-shift'].numericValue
+	]
+
+	# Make the table of results
+	table = makeTable rows
+	table = addStats table, rows
+	return table
+
+# Make the table instance given rows of data
+makeTable = (rows) ->
 	columns = ['Score', 'FCP', 'SI', 'LCP', 'TTI', 'TBT', 'CLS']
 	table = new Table
 		head: ['', ...columns]
 		style: head: ['green']
-	avgs = Array(columns.length).fill(0)
-	for result, index in results
 
-		# Build row content
-		row = [
-			result.categories.performance.score
-			result.audits['first-contentful-paint'].numericValue
-			result.audits['speed-index'].numericValue
-			result.audits['largest-contentful-paint'].numericValue
-			result.audits['interactive'].numericValue
-			result.audits['total-blocking-time'].numericValue
-			result.audits['cumulative-layout-shift'].numericValue
-		]
+	# Loop through rows and add formatted row to table
+	table.push "##{index + 1}": formatRow row for row, index in rows
+	return table
 
-		# Add to averages list
-		avgs[i] += row[i]/times for val, i in avgs
+# Add stats to the table
+addStats = (table, rows) ->
 
-		# Format for humans and add to table
-		table.push "##{index + 1}": formatRow row
+	# Make an 2 dimensionsal array where the outer array contains arrays or values
+	# for eachs stat
+	data = []
+	for row in rows
+		for val, statIndex in row
+			data[statIndex] = [] unless data[statIndex]
+			data[statIndex].push val
 
-	# Add averages and return
-	table.push [chalk.bold('AVG')]: formatRow(avgs).map (val) -> chalk.bold val
+	# Calculate stats and add to table
+	for func, label of { mean: 'AVG', stdev: 'SD' }
+		stat = data.map (vals) -> stats[func](vals)
+		cols = formatRow(stat).map (val) -> chalk.bold val
+		table.push [chalk.bold(label)]: cols
 	return table
 
 # Helper function to format a row of table output for human readibility

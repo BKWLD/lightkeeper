@@ -11,6 +11,30 @@ $ npm install --global @bkwld/lightkeeper
 $ lightkeeper https://yourdomain.com
 ```
 
+The results will be something like this:
+
+```
+Mobile Results
+┌─────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+│     │ Score │ FCP   │ SI    │ LCP   │ TTI   │ TBT   │ CLS   │
+├─────┼───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ #1  │ 57    │ 3.8s  │ 5s    │ 6.2s  │ 5.6s  │ 328ms │ 0     │
+├─────┼───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ #2  │ 66    │ 2.5s  │ 3.5s  │ 5.5s  │ 5.2s  │ 406ms │ 0.005 │
+├─────┼───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ #3  │ 70    │ 2.5s  │ 3.5s  │ 5.4s  │ 5s    │ 307ms │ 0     │
+├─────┼───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ AVG │ 64.3  │ 2.9s  │ 4s    │ 5.7s  │ 5.3s  │ 347ms │ 0.002 │
+├─────┼───────┼───────┼───────┼───────┼───────┼───────┼───────┤
+│ SD  │ 5.4   │ 646ms │ 719ms │ 354ms │ 263ms │ 42ms  │ 0.002 │
+└─────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+```
+
+The summary rows (which can be exclusive returned with the `-s` option) contain the following rows:
+
+- `AVG` - The [statistical mean](https://en.wikipedia.org/wiki/Mean)
+- `SD` - The [standard deviation](https://en.wikipedia.org/wiki/Standard_deviation)
+
 #### Options
 
 From `lightkeeper --help`:
