@@ -4,6 +4,7 @@ lighthouse = require 'lighthouse'
 chromeLauncher = require 'chrome-launcher'
 createProgressBar = require 'progress-estimator'
 defaultProgressTheme = require 'progress-estimator/src/theme'
+readline = require 'readline'
 Table = require 'cli-table'
 chalk = require 'chalk'
 
@@ -56,8 +57,9 @@ execute = ({ url, times, devices, blockedUrls }) ->
 		}
 
 	# Output results
+	await clearLines times * devices.length
 	for device, i in devices
-		console.log "\n\n" + chalk.green.bold "#{ucFirst device} Results"
+		console.log chalk.green.bold "#{ucFirst device} Results"
 		console.log results[i].toString() + "\n"
 
 	# Close Chrome
@@ -120,6 +122,12 @@ formatRow = (row) ->
 		formatTime tbt
 		formatValue cls, 3
 	]
+
+# Clear the progress lines before showing output
+clearLines = (lines) -> new Promise (resolve) ->
+	readline.moveCursor process.stdout, 0, -1 - lines, ->
+		readline.clearScreenDown process.stdout, ->
+			resolve()
 
 # Convert ms to s
 formatTime = (ms) ->
