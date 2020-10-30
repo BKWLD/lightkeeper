@@ -24,19 +24,20 @@ program
 .option '-d, --desktop', 'Test only desktop'
 .option '-m, --mobile ', 'Test only mobile'
 .option '-b, --block <urls>', 'Comma seperated URLs to block, wildcards allowed'
+.option '-s, --summary', 'Only show summary rows'
 
 # Map args and begin running
-.action ({ args: { url }, options: { times, desktop, mobile, block }}) ->
+.action ({ args: { url }, options: { times, desktop, mobile, block, summary }}) ->
 	devices = switch
 		when mobile then ['mobile']
 		when desktop then ['desktop']
 		else ['mobile', 'desktop']
 	blockedUrls = if block then block.split ',' else []
-	execute { url, times, devices, blockedUrls }
+	execute { url, times, devices, blockedUrls, summary }
 program.run()
 
 # Boot up the runner
-execute = ({ url, times, devices, blockedUrls }) ->
+execute = ({ url, times, devices, blockedUrls, summary }) ->
 
 	# Create shared progress bar
 	theme = defaultProgressTheme
@@ -60,7 +61,10 @@ execute = ({ url, times, devices, blockedUrls }) ->
 	await clearLines times * devices.length
 	for device, i in devices
 		console.log chalk.green.bold "#{ucFirst device} Results"
-		console.log results[i].toString() + "\n"
+		unless summary then console.log results[i].toString() + "\n"
+		else
+			results[i].splice 0, results[i].length - 1
+			console.log results[i].toString() + "\n"
 
 	# Close Chrome
 	chrome.kill()
