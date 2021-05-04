@@ -36,11 +36,11 @@ process.on('SIGINT', function() {
 program.description('Averages multiple successive Lighthouse tests').argument('<url>', 'The URL to test').option('-t, --times <count>', 'The number of tests to run', {
   default: 10
 // Map args and begin running
-}).option('-d, --desktop', 'Test only desktop').option('-m, --mobile ', 'Test only mobile').option('-b, --block <urls>', 'Comma seperated URLs to block, wildcards allowed').option('-s, --summary', 'Only show summary rows').action(function({
+}).option('-d, --desktop', 'Test only desktop').option('-m, --mobile ', 'Test only mobile').option('-b, --block <urls>', 'Comma seperated URLs to block, wildcards allowed').option('-s, --summary', 'Only show summary rows').action(async function({
     args: {url},
     options: {times, desktop, mobile, block, summary}
   }) {
-  var blockedUrls, devices;
+  var blockedUrls, devices, j, len, results1, urls;
   devices = (function() {
     switch (false) {
       case !mobile:
@@ -52,7 +52,23 @@ program.description('Averages multiple successive Lighthouse tests').argument('<
     }
   })();
   blockedUrls = block ? block.split(',') : [];
-  return execute({url, times, devices, blockedUrls, summary});
+  if ((url != null ? typeof url.indexOf === "function" ? url.indexOf(" ") : void 0 : void 0) > 0) {
+    // If url contains a space, assume space-separated URLs.  Split into array and test each url.
+    urls = typeof url.split === "function" ? url.split(" ") : void 0;
+    results1 = [];
+    for (j = 0, len = urls.length; j < len; j++) {
+      url = urls[j];
+      // Output this site's url
+      console.log("");
+      console.log(chalk.green.bold(url));
+      console.log("");
+      // Test this url
+      results1.push((await execute({url, times, devices, blockedUrls, summary})));
+    }
+    return results1;
+  } else {
+    return execute({url, times, devices, blockedUrls, summary});
+  }
 });
 
 program.run();

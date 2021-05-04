@@ -34,7 +34,19 @@ program
 		when desktop then ['desktop']
 		else ['mobile', 'desktop']
 	blockedUrls = if block then block.split ',' else []
-	execute { url, times, devices, blockedUrls, summary }
+
+	if (url?.indexOf?(" ") > 0)
+		# If url contains a space, assume space-separated URLs.  Split into array and test each url.
+		urls = url.split?(" ")
+		for url in urls
+			# Output this site's url
+			console.log ""
+			console.log chalk.green.bold url
+			console.log ""
+			# Test this url
+			await execute { url, times, devices, blockedUrls, summary }
+	else
+		execute { url, times, devices, blockedUrls, summary }
 program.run()
 
 # Boot up the runner
