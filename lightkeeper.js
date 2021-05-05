@@ -52,8 +52,7 @@ program.description('Averages multiple successive Lighthouse tests').argument('<
     }
   })();
   blockedUrls = block ? block.split(',') : [];
-  // If url contains a space, assume space-separated URLs.  Split into array and
-  // test each url.
+  // Support comma delmited URLs or single URls
   urls = url.split(',');
   results1 = [];
   for (j = 0, len = urls.length; j < len; j++) {
