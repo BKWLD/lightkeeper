@@ -35,8 +35,7 @@ program
 		else ['mobile', 'desktop']
 	blockedUrls = if block then block.split ',' else []
 
-	# If url contains a space, assume space-separated URLs.  Split into array and
-	# test each url.
+	# Support comma delmited URLs or single URls
 	urls = url.split ','
 	for url in urls
 		console.log ""
