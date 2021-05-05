@@ -20,7 +20,7 @@ process.on 'SIGINT', -> process.exit(0)
 # Setup CLI
 program
 .description 'Averages multiple successive Lighthouse tests'
-.argument '<url>', 'The URL to test'
+.argument '<url>', 'The comma-delimited URL(s) to test'
 .option '-t, --times <count>', 'The number of tests to run', default: 10
 .option '-d, --desktop', 'Test only desktop'
 .option '-m, --mobile ', 'Test only mobile'
@@ -34,7 +34,15 @@ program
 		when desktop then ['desktop']
 		else ['mobile', 'desktop']
 	blockedUrls = if block then block.split ',' else []
-	execute { url, times, devices, blockedUrls, summary }
+
+	# Support comma delmited URLs or single URls
+	urls = url.split ','
+	for url in urls
+		console.log ""
+		console.log chalk.yellow.bold url
+		await execute { url, times, devices, blockedUrls, summary }
+
+# Start cli program
 program.run()
 
 # Boot up the runner
