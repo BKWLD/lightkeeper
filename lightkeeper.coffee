@@ -83,8 +83,8 @@ execute = ({ url, times, devices, blockedUrls, summary }) ->
 
 	# Show the benchmarkIndex that was used
 	console.log chalk.dim.italic "\
-		benchmarkIndex: #{formatValue(benchmarkIndex, 0)}, \
-		cpuSlowdownMultiplier #{formatValue(multiplier)}"
+		benchmarkIndex: #{formatValue(benchmarkIndex, 0)} \
+		(cpuSlowdownMultiplier: #{formatValue(multiplier)})"
 	console.log ""
 
 	# Close Chrome
