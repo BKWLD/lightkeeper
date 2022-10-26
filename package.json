@@ -18,7 +18,7 @@
     "@caporal/core": "^2.0.2",
     "chalk": "^4.1.0",
     "cli-table": "^0.3.1",
-    "lighthouse": "^6.3.0",
+    "lighthouse": "^9.6.7",
     "progress-estimator": "^0.3.0",
     "stats-lite": "^2.2.0"
   },
