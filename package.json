@@ -1,6 +1,6 @@
 {
   "name": "@bkwld/lightkeeper",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Averages multiple successive Lighthouse tests to arrive at a more accurate PageSpeed score",
   "repository": "git@github.com:BKWLD/lightkeeper.git",
   "author": "info@bukwild.com",
