@@ -1,5 +1,6 @@
 # Deps
 { program } = require '@caporal/core'
+{ computeMultiplierMessages } = require './src/cpu-throttling-calculator'
 lighthouse = require 'lighthouse'
 chromeLauncher = require 'chrome-launcher'
 createProgressBar = require 'progress-estimator'
@@ -8,6 +9,7 @@ stats = require 'stats-lite'
 readline = require 'readline'
 Table = require 'cli-table'
 chalk = require 'chalk'
+
 
 # Load Lighthouse configs
 configs =
@@ -59,15 +61,19 @@ execute = ({ url, times, devices, blockedUrls, summary }) ->
 	chrome = await progress bootChrome, 'Booting Chrome', estimate: 1000
 	process.on 'exit', -> chrome.kill() # Cleanup
 
+	# Run benchmarking of device first
+	benchmarkIndex = await calculateBenchmarkIndex { url, chrome, progress }
+	{ multiplier } = computeMultiplierMessages benchmarkIndex
+
 	# Loop through each device and run tests
 	results = []
 	for device in devices
 		results.push await analyzeUrl {
-			url, times, device, blockedUrls, chrome, progress,
+			url, times, device, blockedUrls, multiplier, chrome, progress,
 		}
 
 	# Output results, only rendering the summary lines if specified.
-	await clearLines times * devices.length
+	await clearLines times * devices.length + 1
 	for device, i in devices
 		console.log chalk.green.bold "#{ucFirst device} Results"
 		unless summary then console.log results[i].toString() + "\n"
@@ -75,22 +81,42 @@ execute = ({ url, times, devices, blockedUrls, summary }) ->
 			results[i].splice 0, results[i].length - 2
 			console.log results[i].toString() + "\n"
 
+	# Show the benchmarkIndex that was used
+	console.log chalk.dim.italic "\
+		benchmarkIndex: #{formatValue(benchmarkIndex, 0)}, \
+		cpuSlowdownMultiplier #{formatValue(multiplier)}"
+	console.log ""
+
 	# Close Chrome
 	chrome.kill()
 
+# Figure out the benchmarkIndex for the device
+# https://github.com/GoogleChrome/lighthouse/blob/61973c636dc4dc912dbcd86f05f657d045eea75a/docs/throttling.md#benchmarking-cpu-power
+calculateBenchmarkIndex = ({ url, chrome, progress }) ->
+	flags =
+		onlyCategories: [] # Don't run any audits
+		port: chrome.port
+	result = await progress lighthouse(url, flags),
+		"Benchmarking System", estimate: 10000
+	report = JSON.parse result.report
+	return report.environment.benchmarkIndex
+
 # Analyze a URL a certain number of times for the provided device
-analyzeUrl = ({ url, times, device, blockedUrls, chrome, progress }) ->
+analyzeUrl = ({
+	url, times, device, blockedUrls, multiplier, chrome, progress
+}) ->
 
 	# Make the lighthouse config
 	flags =
 		onlyCategories: ['performance']
 		blockedUrlPatterns: blockedUrls
+		throttling: cpuSlowdownMultiplier: multiplier
 		port: chrome.port
 
 	# Run tests one at a time and collect results
 	results = []
 	for time in [1..times]
-		{ report } =  await progress lighthouse(url, flags, configs[device]),
+		{ report } = await progress lighthouse(url, flags, configs[device]),
 			"Testing #{ucFirst device} #{time}/#{times}", estimate: 10000
 		results.push JSON.parse report
 
